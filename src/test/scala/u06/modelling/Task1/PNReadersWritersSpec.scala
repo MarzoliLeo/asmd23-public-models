@@ -2,25 +2,49 @@ package u06.modelling.Task1
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.*
+import org.scalatest.funsuite.AnyFunSuite
+import u06.modelling.MutualExclusion
 
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
+import u06.utils.MSet
+
+import scala.u06.examples.PNReadersWriters.*
+import scala.u06.modelling.Boundedness
 
 class PNReadersWritersSpec extends AnyFunSuite:
 
-  import scala.u06.examples.PNReadersWriters.*
-
-  test("PN for Readers & Writers should maintain mutual exclusion for paths of length up to 100"):
+  test("PN for Readers & Writers should maintain mutual exclusion and boundedness for paths of length up to 100"):
 
     val initialState = MSet(Place.IdleReader, Place.IdleWriter)
-    val paths = pnRW.completePathsUpToDepth(initialState, 7)
+    val visitedMarkings = scala.collection.mutable.Set[MSet[Place]]()
 
-    val violations = paths.filter { path =>
-      path.exists { marking =>
-        val writerCount = marking(Place.Writing)
-        val readerCount = marking(Place.Reading)
-        writerCount > 1 || (writerCount > 0 && readerCount > 0)
+    // Definiamo la proprietà di safety.
+    val mutualExclusion = MutualExclusion()
+    val boundedness = Boundedness(10)
+
+    val paths = pnRW.completePathsUpToDepthFiltered(initialState, 100, path => {
+      val lastMarking = path.last
+      if (visitedMarkings.contains(lastMarking)) false
+      else {
+        visitedMarkings += lastMarking
+        true
+      }
+    })
+
+    val violationFutures = paths.grouped(500).map { pathGroup =>
+      Future {
+        pathGroup.filter { path =>
+          path.exists(state => mutualExclusion.isViolated(state) || boundedness.isViolated(state))
+        }
       }
     }
 
-    violations should be (empty)
+    // Attende che tutte le verifiche siano completate
+    val violations = Await.result(Future.sequence(violationFutures), 10.minutes).flatten
+
+    assert(violations.isEmpty, s"Found ${violations.size} violation(s). They are: ${violations}")
+
 
 
