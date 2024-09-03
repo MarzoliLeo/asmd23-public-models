@@ -24,8 +24,12 @@ object SystemAnalysis:
     // complete paths with length '<= depth' (could be optimised)
     def completePathsUpToDepth(s: S, depth:Int): Seq[Path[S]] =
       (1 to depth).to(LazyList) flatMap (paths(s, _)) filter (complete(_))
-    
-    //Task 1 (This permits to handle 100 states).
+
+    /*
+     * ** TASK 1 **
+     */
+
+    //(This permits to handle 100 states).
     def pathsFiltered(s: S, depth: Int, filter: Path[S] => Boolean): Seq[Path[S]] = depth match
       case 0 => LazyList()
       case 1 => LazyList(List(s))
@@ -37,5 +41,5 @@ object SystemAnalysis:
 
     def completePathsUpToDepthFiltered(s: S, depth: Int, filter: Path[S] => Boolean): Seq[Path[S]] =
       (1 to depth).to(LazyList) flatMap (pathsFiltered(s, _, filter)) filter (complete(_))
-      
+
 

@@ -7,6 +7,12 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.*
 import scala.u06.examples.PNReadersWriters.pnRW
+import scala.u06.modelling.Boundedness
+
+
+/*
+ * ** TASK 1 **
+ */
 
 object PNReadersWriters:
 
@@ -41,8 +47,10 @@ object PNReadersWriters:
   val initialState = MSet(Place.IdleReader, Place.IdleWriter)
   val visitedMarkings = scala.collection.mutable.Set[MSet[Place]]()
 
-  // Definiamo la proprietà di sicurezza
+  // Definiamo la proprietà di safety.
   val mutualExclusion = MutualExclusion()
+  val boundedness = Boundedness(10)
+
 
   val paths = pnRW.completePathsUpToDepthFiltered(initialState, 100, path => {
     val lastMarking = path.last
@@ -56,7 +64,7 @@ object PNReadersWriters:
   val violationFutures = paths.grouped(500).map { pathGroup =>
     Future {
       pathGroup.filter { path =>
-        path.exists(mutualExclusion.isViolated)
+        path.exists(state => mutualExclusion.isViolated(state) || boundedness.isViolated(state))
       }
     }
   }
@@ -67,6 +75,6 @@ object PNReadersWriters:
   if (violations.isEmpty)
     println("No violations found in paths of length up to 100")
   else
-    println(s"Found ${violations.size} violation(s) of mutual exclusion.")
+    println(s"Found ${violations.size} violation(s).")
     println(s"They are: ${violations}")
 
