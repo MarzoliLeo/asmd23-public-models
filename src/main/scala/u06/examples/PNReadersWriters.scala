@@ -1,0 +1,75 @@
+package scala.u06.examples
+
+import u06.modelling.PetriNet
+import u06.utils.MSet
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.*
+import scala.u06.examples.PNReadersWriters.pnRW
+
+object PNReadersWriters:
+
+  enum Place:
+    case IdleReader, IdleWriter, Reading, Writing, WaitToRead, WaitToWrite
+
+  export Place.*
+  export u06.modelling.PetriNet.*
+  export u06.modelling.SystemAnalysis.*
+  //export u06.modelling.SafetyAnalysis.*
+  export u06.utils.MSet
+
+  // DSL-like specification of a Petri Net
+  def pnRW = PetriNet[Place](
+    MSet(Place.IdleReader) ~~> MSet(Place.Reading),
+    MSet(Place.Reading) ~~> MSet(Place.IdleReader),
+    MSet(Place.IdleWriter) ~~> MSet(Place.Writing),
+    MSet(Place.Writing) ~~> MSet(Place.IdleWriter),
+
+    // Modified transitions to ensure mutual exclusion
+    MSet(Place.Writing) ~~> MSet(Place.WaitToWrite) ^^^ MSet(Place.Reading, Place.WaitToRead),  // Write waits if there's a reader or another writer waiting to read
+    MSet(Place.Reading) ~~> MSet(Place.WaitToRead) ^^^ MSet(Place.Writing, Place.WaitToWrite),  // Read waits if there's a writer or another writer waiting to write
+
+    // Additional transitions to handle waiting readers and writers
+    MSet(Place.WaitToRead) ~~> MSet(Place.Reading) ^^^ MSet(Place.Writing), // WaitToRead can proceed to Reading if no writer is active
+    MSet(Place.WaitToWrite) ~~> MSet(Place.Writing) ^^^ MSet(Place.Reading) // WaitToWrite can proceed to Writing if no reader is active
+  ).toSystem
+
+@main def mainPNReadersWriters =
+  import PNReadersWriters.*
+
+  // Initialize the system with IdleReader and IdleWriter places
+  val initialState = MSet(Place.IdleReader, Place.IdleWriter)
+
+  val visitedMarkings = scala.collection.mutable.Set[MSet[Place]]()
+
+  val paths = pnRW.completePathsUpToDepthFiltered(initialState, 100, path => {
+    val lastMarking = path.last
+    if (visitedMarkings.contains(lastMarking)) false
+    else {
+      visitedMarkings += lastMarking
+      true
+    }
+  })
+
+  val violationFutures = paths.grouped(500).map { pathGroup =>
+    Future {
+      pathGroup.filter { path =>
+        path.exists { marking =>
+          val writerCount = marking(Place.Writing)
+          val readerCount = marking(Place.Reading)
+          writerCount > 1 || (writerCount > 0 && readerCount > 0)
+        }
+      }
+    }
+  }
+
+  // Attende che tutte le verifiche siano completate
+  val violations = Await.result(Future.sequence(violationFutures), 10.minutes).flatten
+
+  if (violations.isEmpty)
+    println("No violations found in paths of length up to 100")
+  else
+    println(s"Found ${violations.size} violation(s) of mutual exclusion.")
+    println(s"They are: ${violations}")
+

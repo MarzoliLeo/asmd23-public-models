@@ -1,7 +1,9 @@
-package u06.modelling
+/*package scala.u06.modelling
+
+import scala.collection.immutable.{LazyList, List, Seq}
 
 // Basical analysis helpers
-object SystemAnalysis:
+object SafetyAnalysis:
 
   type Path[S] = List[S]
 
@@ -12,20 +14,6 @@ object SystemAnalysis:
     def complete(p: Path[S]): Boolean = normalForm(p.last)
 
     // paths of exactly length `depth`
-    def paths(s: S, depth: Int): Seq[Path[S]] = depth match
-      case 0 => LazyList()
-      case 1 => LazyList(List(s))
-      case _ =>
-        for
-          path <- paths(s, depth - 1)
-          next <- system.next(path.last)
-        yield path :+ next
-
-    // complete paths with length '<= depth' (could be optimised)
-    def completePathsUpToDepth(s: S, depth:Int): Seq[Path[S]] =
-      (1 to depth).to(LazyList) flatMap (paths(s, _)) filter (complete(_))
-    
-    //Task 1 (This permits to handle 100 states).
     def pathsFiltered(s: S, depth: Int, filter: Path[S] => Boolean): Seq[Path[S]] = depth match
       case 0 => LazyList()
       case 1 => LazyList(List(s))
@@ -36,6 +24,5 @@ object SystemAnalysis:
         yield path :+ next
 
     def completePathsUpToDepthFiltered(s: S, depth: Int, filter: Path[S] => Boolean): Seq[Path[S]] =
-      (1 to depth).to(LazyList) flatMap (pathsFiltered(s, _, filter)) filter (complete(_))
-      
+      (1 to depth).to(LazyList) flatMap (pathsFiltered(s, _, filter)) filter (complete(_)) */
 
