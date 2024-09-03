@@ -1,6 +1,6 @@
 package scala.u06.examples
 
-import u06.modelling.PetriNet
+import u06.modelling.{MutualExclusion, PetriNet}
 import u06.utils.MSet
 
 import scala.concurrent.{Await, Future}
@@ -38,10 +38,11 @@ object PNReadersWriters:
 @main def mainPNReadersWriters =
   import PNReadersWriters.*
 
-  // Initialize the system with IdleReader and IdleWriter places
   val initialState = MSet(Place.IdleReader, Place.IdleWriter)
-
   val visitedMarkings = scala.collection.mutable.Set[MSet[Place]]()
+
+  // Definiamo la proprietà di sicurezza
+  val mutualExclusion = MutualExclusion()
 
   val paths = pnRW.completePathsUpToDepthFiltered(initialState, 100, path => {
     val lastMarking = path.last
@@ -55,11 +56,7 @@ object PNReadersWriters:
   val violationFutures = paths.grouped(500).map { pathGroup =>
     Future {
       pathGroup.filter { path =>
-        path.exists { marking =>
-          val writerCount = marking(Place.Writing)
-          val readerCount = marking(Place.Reading)
-          writerCount > 1 || (writerCount > 0 && readerCount > 0)
-        }
+        path.exists(mutualExclusion.isViolated)
       }
     }
   }
