@@ -47,8 +47,8 @@ object PNReadersWriters:
   val initialState = MSet(Place.IdleReader, Place.IdleWriter)
   val visitedMarkings = scala.collection.mutable.Set[MSet[Place]]()
 
-  // Definiamo la proprietà di safety.
-  val mutualExclusion = MutualExclusion()
+  //Property Checks.
+  val mutualExclusion = MutualExclusion(Place.Writing, Place.Reading)
   val boundedness = Boundedness(10)
 
 
