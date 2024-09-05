@@ -3,7 +3,7 @@ package u06.modelling
 import u06.utils.MSet
 
 /*
- * ** TASK 1 **
+ * ** TASK 1, 2 **
  */
 
 case class MutualExclusion[P](writing: P, reading: P) extends ModelProperties[MSet[P]]:
