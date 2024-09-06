@@ -17,3 +17,18 @@ variation where at most two process can write?
 ## Implementazione: 
 
 //Vedi classi: Liveness, PNReadersWritersMinimal , PNReadersWritersMinimalSpec
+
+
+# Task 3: ARTIST
+Create a variation/extension of PetriNet meta-model, with priorities: each transition is given a numerical priority, and no transition can
+fire if one with higher priority can fire. Show an example that your pretty new “abstraction” works as expected. Another interesting extension
+is “coloring”: tokens have a value attached, and this is read/updated by transitions.
+
+## Implementazione:
+
+//Vedi ColoredMSet, PetriNetWithColoring, PetriNetWithPriority, e i due relativi examples.
+
+
+# Task 4: TOOLER
+The current API might be re-organised: can we generate/navigate all paths thanks to caching and lazy evaluation? can we use
+monads/effects to capture non-determinism? can we generate paths and capture safety properties by ScalaCheck?
