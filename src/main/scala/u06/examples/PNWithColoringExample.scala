@@ -4,7 +4,7 @@ import u06.modelling.PetriNetWithColoring
 import u06.modelling.PetriNetWithColoring.*
 import u06.utils.ColoredMSet
 
-object ReadersWritersExample:
+object PNWithColoringExample:
 
   enum Place:
     case Idle, Reading, Writing, Queue
