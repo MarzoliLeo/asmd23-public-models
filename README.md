@@ -130,7 +130,6 @@ val pathsLazy = pnRW.completePathsLazy(initialState, 10)
 pathsLazy.filter { path =>
   path.exists(state => mutualExclusion.isViolated(state) || boundedness.isViolated(state))
 }
-
 ```
 
 ### 3. Completare (**complete**)
@@ -151,7 +150,6 @@ val pnRW = PetriNet(
 
 // Completamento della transizione mancante
 val finishReading = Transition("finishReading", Set(Place.Reading), Set(Place.IdleReader))
-
 ```
 
 ### 4. Implementare (**implement**)
@@ -161,7 +159,6 @@ Un LLM può implementare funzioni o metodi all'interno di un modello di Petri Ne
 ```scala
 def completePaths(s: S, depth: Int): Seq[Path[S]] =
   (1 to depth).flatMap(paths(s, _)).filter(complete)
-
 ```
 Qui l'LLM ha implementato una funzione per trovare percorsi completi in una Petri Net, dimostrando la capacità di tradurre una richiesta in codice funzionante.
 
@@ -175,7 +172,6 @@ L'LLM può anche essere utilizzato per fare reverse engineering di un modello di
 // Stato finale osservato: Place.IdleReader, Place.Reading
 // Deduciamo la transizione che potrebbe aver portato a questo stato
 val inferredTransition = Transition("startReading", Set(Place.IdleReader), Set(Place.Reading))
-
 ```
 In questo esempio, partendo da un'osservazione dello stato finale, l'LLM è in grado di inferire una possibile transizione che potrebbe aver portato a tale stato.
 
