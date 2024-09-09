@@ -94,4 +94,90 @@ In sintesi, grazie a caching, lazy evaluation, monadi per il non determinismo e 
 
 
 
-# Task 5: 
+# Task 5: PETRINET-LLM
+We know that LLMs/ChatGPT can arguably help in write/improve/complete/implement/reverse-engineer standard ProgLangs. But is it of help in
+designing Petri Nets? Does it truly “understand” the model? Does it understand our DSL by examples?
+
+## Implementazione:
+
+
+### 1. Scrivere (**write**)
+Gli LLM sono in grado di scrivere codice che rappresenta modelli di Petri Net da zero, sulla base di descrizioni testuali.
+
+#### Esempio: Scrivere un modello di base per una Petri Net
+```scala
+val pnRW = PetriNet(
+  places = Set(Place.IdleReader, Place.IdleWriter, Place.Reading, Place.Writing),
+  transitions = Set(
+    Transition("startReading", Set(Place.IdleReader), Set(Place.Reading)),
+    Transition("startWriting", Set(Place.IdleWriter), Set(Place.Writing)),
+    Transition("finishReading", Set(Place.Reading), Set(Place.IdleReader)),
+    Transition("finishWriting", Set(Place.Writing), Set(Place.IdleWriter))
+  )
+)
+```
+In questo esempio, l'LLM ha generato correttamente un modello semplice di Petri Net, dimostrando la sua capacità di scrivere codice strutturato.
+
+### 2. Migliorare (**improve**)
+Gli LLM possono anche migliorare un modello esistente, suggerendo ottimizzazioni o nuovi modi per organizzare il codice.
+
+#### Esempio: Ottimizzare il controllo delle proprietà
+Se il modello precedente viene ottimizzato per la verifica di proprietà di safety, l'LLM può proporre miglioramenti come l'uso della lazy evaluation per migliorare le prestazioni:
+
+```scala
+val pathsLazy = pnRW.completePathsLazy(initialState, 10)
+
+pathsLazy.filter { path =>
+  path.exists(state => mutualExclusion.isViolated(state) || boundedness.isViolated(state))
+}
+
+```
+
+### 3. Completare (**complete**)
+
+Quando un modello di Petri Net è parzialmente definito, gli LLM possono essere usati per completare le parti mancanti, come l'aggiunta di transizioni o la definizione di ulteriori posti.
+
+#### Esempio: Completare una transizione mancante
+
+```scala
+// Transizioni parziali
+val pnRW = PetriNet(
+  places = Set(Place.IdleReader, Place.IdleWriter),
+  transitions = Set(
+    Transition("startReading", Set(Place.IdleReader), Set(Place.Reading)),
+    // Mancano altre transizioni
+  )
+)
+
+// Completamento della transizione mancante
+val finishReading = Transition("finishReading", Set(Place.Reading), Set(Place.IdleReader))
+
+```
+
+### 4. Implementare (**implement**)
+Un LLM può implementare funzioni o metodi all'interno di un modello di Petri Net, ad esempio, per calcolare percorsi completi o analizzare proprietà.
+
+#### Esempio: Implementare una funzione per trovare percorsi completi
+```scala
+def completePaths(s: S, depth: Int): Seq[Path[S]] =
+  (1 to depth).flatMap(paths(s, _)).filter(complete)
+
+```
+Qui l'LLM ha implementato una funzione per trovare percorsi completi in una Petri Net, dimostrando la capacità di tradurre una richiesta in codice funzionante.
+
+### 5. Reverse Engineering (**reverse-engineer**)
+
+L'LLM può anche essere utilizzato per fare reverse engineering di un modello di Petri Net esistente. Partendo da un output (ad esempio, un comportamento o una traccia), può cercare di dedurre la struttura della rete.
+
+#### Esempio: Dedurre una transizione da uno stato finale
+
+```scala
+// Stato finale osservato: Place.IdleReader, Place.Reading
+// Deduciamo la transizione che potrebbe aver portato a questo stato
+val inferredTransition = Transition("startReading", Set(Place.IdleReader), Set(Place.Reading))
+
+```
+In questo esempio, partendo da un'osservazione dello stato finale, l'LLM è in grado di inferire una possibile transizione che potrebbe aver portato a tale stato.
+
+### Conclusione
+Chiaramente tutto ciò dimostra il loro corretto funzionamento in questo specifico contesto di modelling. Tuttavia, la loro efficacia dipende sempre dalla chiarezza degli input e dal livello di complessità richiesto.
