@@ -1,5 +1,7 @@
 package u07.utils
 
+import u07.utils.Stochastics.cumulative
+
 import scala.util.Random
 
 object Stochastics:
@@ -21,4 +23,3 @@ object Stochastics:
                    (using rnd: Random): Map[A,Int] =
     (1 to size).map(i => draw(cumulative(choices.toList)))
                 .groupBy(identity).view.mapValues(_.size).toMap
-

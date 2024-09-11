@@ -6,7 +6,7 @@ import u07.utils.MSet
 import java.util.Random
 import scala.u07.modelling.CTMCAnalysis
 
-object StochasticReadersWriters extends App:
+object StochasticReadersWriters
   enum Place:
     case READING, WRITING, WAITING_READER, WAITING_WRITER, IDLE_READER, IDLE_WRITER
 
@@ -15,7 +15,7 @@ object StochasticReadersWriters extends App:
   export u07.modelling.SPN.*
 
 
-  val spn = SPN[Place](
+  val spnRW = SPN[Place](
     // Un lettore inizia a leggere se non ci sono scrittori che scrivono
     Trn(MSet(WAITING_READER), m => 1.0, MSet(READING), MSet(WRITING)),
 
@@ -37,11 +37,12 @@ object StochasticReadersWriters extends App:
 
   val initialMarking = MSet(WAITING_READER, WAITING_WRITER)
 
-  val ctmcModel = toCTMC(spn)
+  val ctmcModel = toCTMC(spnRW)
 
-  println:
-    ctmcModel.newSimulationTrace(initialMarking, new Random)
-      .take(20)
-      .toList
-      .mkString("\n")
+@main def mainStochasticReadersWriters() =
+      println:
+        ctmcModel.newSimulationTrace(initialMarking, new Random)
+          .take(20)
+          .toList
+          .mkString("\n")
 
