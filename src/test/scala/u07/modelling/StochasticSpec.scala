@@ -6,9 +6,13 @@ import org.scalacheck.{Gen, Properties}
 import scala.util.Random
 import u07.utils.Stochastics
 
+/*
+ * Task 4
+ */
+
 object StochasticSpec extends Properties("Stochastics"):
 
-  // Test with a fixed seed to ensure repeatability
+  // Test con un fixed seed per garantire ripetibilità.
   given Random = new Random(12345L)
 
   // Example set of choices with known probabilities

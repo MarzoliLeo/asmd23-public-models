@@ -1,3 +1,4 @@
+# Lab 06
 # Task 1: VERIFIER
 Code and do some analysis on the Readers & Writers Petri Net. Add a test to check that in no path long at most 100 states mutual
 exclusion fails (no more than 1 writer, and no readers and writers together). Can you extract a small API for representing safety properties?
@@ -177,3 +178,145 @@ In questo esempio, partendo da un'osservazione dello stato finale, l'LLM è in g
 
 ### Conclusione
 Chiaramente tutto ciò dimostra il loro corretto funzionamento in questo specifico contesto di modelling. Tuttavia, la loro efficacia dipende sempre dalla chiarezza degli input e dal livello di complessità richiesto.
+
+# Lab 07
+
+# Task 1: SIMULATOR
+Take the communication channel CTMC example in StochasticChannelSimulation. Compute the average time at which
+communication is done—across n runs. Compute the relative amount of time (0% to 100%) that the system is in fail state until
+communication is done—across n runs. Extract an API for nicely performing similar checks.
+
+## Implementazione:
+
+**Sorgenti**:
+
+* [CTCMAnalysis](src/main/scala/u07/modelling/CTCMAnalysis.scala)
+* [StochasticChannelSimulation](src/main/scala/u07/examples/StochasticChannelSimulation.scala)
+
+Per risolvere il task relativo alla simulazione del Continuous-Time Markov Chain (CTMC) per un canale di comunicazione, ho sviluppato una serie di funzioni che mi permettono di eseguire simulazioni ripetute e calcolare sia il tempo medio di completamento della comunicazione, sia la percentuale di tempo trascorsa nello stato di errore (FAIL) fino al completamento della comunicazione.
+
+Ho iniziato creando una funzione generica `simulate` che accetta il CTMC, lo stato iniziale e il numero di esecuzioni (runs). Questa funzione genera delle tracce di simulazione che terminano quando viene raggiunta una condizione specificata (stop condition). Questo mi permette di riutilizzare la funzione in contesti diversi, mantenendo un'API flessibile.
+
+La funzione `averageTimeToState` calcola il tempo medio necessario per raggiungere uno stato target, ad esempio lo stato finale `DONE`, attraverso più esecuzioni. Per ciascuna simulazione, la funzione somma i tempi necessari per raggiungere lo stato target e ne calcola la media.
+
+Per quanto riguarda il secondo obiettivo del task, ho implementato `failTimePercentage`, una funzione che calcola la percentuale del tempo trascorsa nello stato di errore `FAIL`. Durante la simulazione, tengo traccia del tempo totale e del tempo trascorso nello stato di errore, poi utilizzo questi valori per determinare la percentuale di tempo in cui il sistema si trova nello stato di errore rispetto al tempo totale fino al completamento della comunicazione.
+
+Infine, ho verificato i risultati implementando un'analisi eseguita tramite la funzione `runAnalysis`, che esegue 1000 simulazioni per ciascun calcolo (tempo medio e percentuale di tempo in errore). Questi risultati vengono stampati, consentendo una valutazione immediata dell'efficienza del sistema e del comportamento in caso di errori.
+
+Le funzioni create possono essere riutilizzate facilmente per eseguire altre analisi su modelli CTMC simili, grazie all'astrazione fornita dalla funzione `simulate`, che gestisce in maniera modulare la simulazione e l'analisi degli stati.
+
+# Task 2: GURU
+Check the SPN module, that incorporates the ability of CTMC modelling on top of Petri Nets, leading to Stochastic Petri Nets. Code
+and simulate Stochastic Readers & Writers shown in previous lesson. Try to study how key parameters/rate influence average time the
+system is in read or write state.
+
+## Implementazione:
+
+**Sorgenti**:
+
+* [StochasticReadersWriters](src/main/scala/u07/examples/StochasticReadersWriters.scala)
+
+
+Per affrontare il task di modellazione stocastica dei Readers & Writers utilizzando le Stochastic Petri Nets (SPN), ho implementato un modulo che combina i concetti di Petri Net con quelli del Continuous-Time Markov Chain (CTMC), in modo da simulare i comportamenti dei lettori e degli scrittori in un sistema concorrente. L'obiettivo è stato quello di studiare l'influenza dei parametri chiave sui tempi medi di permanenza del sistema negli stati di lettura e scrittura.
+
+Ho definito i vari stati possibili per i lettori e gli scrittori utilizzando un'enumerazione (`Place`), che include stati di lettura (`READING`), scrittura (`WRITING`), e stati di attesa o inattività come `WAITING_READER`, `WAITING_WRITER`, `IDLE_READER`, e `IDLE_WRITER`.
+
+Per rappresentare la logica di transizione tra questi stati, ho modellato le regole seguenti:
+- Un lettore può iniziare a leggere solo se non ci sono scrittori attualmente in fase di scrittura.
+- Al termine della lettura, il lettore entra in uno stato di inattività (`IDLE_READER`), prima di poter tornare nello stato di attesa di lettura.
+- In modo simile, uno scrittore può iniziare a scrivere solo se non ci sono altri scrittori o lettori che stanno leggendo.
+- Al termine della scrittura, lo scrittore passa allo stato di inattività (`IDLE_WRITER`), per poi tornare nello stato di attesa di scrittura.
+
+Per ciascuna di queste transizioni ho associato una funzione che definisce il tasso stocastico con cui avviene il cambiamento di stato, il che rende il sistema una Stochastic Petri Net (SPN). Ho quindi creato il modello SPN dei Readers & Writers con queste transizioni e ho definito un marking iniziale, che rappresenta lo stato iniziale del sistema (con lettori e scrittori entrambi in attesa di accedere alla risorsa).
+
+Successivamente, ho convertito il modello SPN in un CTMC utilizzando la funzione `toCTMC`, così da poter eseguire simulazioni stocastiche del sistema. Queste simulazioni permettono di osservare i comportamenti temporali e stocastici del sistema, tracciando il passaggio da uno stato all'altro. Infine, ho generato delle trace della simulazione, che mostrano una sequenza di eventi casuali che si verificano nel tempo.
+
+# Task 4: RANDOM-UNIT-TESTER
+How do we unit-test with randomness? And how we test at all with randomness? Think about this in general. Try to create a
+repeatable unit test for Statistics as in utils.StochasticSpec.
+
+## Implementazione:
+
+**Sorgenti**:
+
+* [StochasticSpec](src/test/scala/u07/modelling/StochasticSpec.scala)
+
+Nel contesto di questo task, mi è stato chiesto di risolvere una problematica complessa legata al testing di funzioni che contengono casualità, affrontando la domanda: "Come possiamo effettuare unit test con randomness?". Il problema centrale è legato alla ripetibilità dei test che utilizzano variabili casuali, che per loro natura possono produrre risultati diversi ad ogni esecuzione. Per garantire la coerenza e la ripetibilità dei test, è stato necessario fissare un seed per il generatore di numeri casuali, così che la sequenza di numeri generati fosse sempre la stessa in ogni esecuzione del test.
+
+Ho affrontato questa problematica utilizzando la libreria **ScalaCheck**, che consente di generare test basati su proprietà. In particolare, mi sono concentrato sul test della funzione `Stochastics.statistics`, che genera distribuzioni di frequenza in base alle probabilità assegnate a ciascun elemento in input. Questo ha richiesto la creazione di un set di scelte con probabilità note e l'esecuzione di simulazioni su una quantità fissa di iterazioni (1000 campioni in questo caso).
+
+Il cuore del test risiede nella verifica che le proporzioni degli elementi selezionati siano in linea con le probabilità attese, tenendo conto di una piccola tolleranza dovuta alla natura casuale del processo. Nello specifico:
+- Ho verificato che la probabilità dell'elemento "a" sia vicina al 50% (tolleranza tra il 45% e il 55%).
+- La probabilità dell'elemento "b" sia vicina al 30% (tolleranza tra il 25% e il 35%).
+- La probabilità dell'elemento "c" sia vicina al 20% (tolleranza tra il 15% e il 25%).
+
+Questa implementazione garantisce che il test sia ripetibile, deterministico e consenta di verificare accuratamente il comportamento della funzione anche in presenza di randomness.
+
+# Task 5: PROBABILITY-LLM
+We know that LLMs/ChatGPT can arguably help in write/improve/complete/implement/reverse-engineer standard ProgLangs. But is
+it of help in taking into account probability? Seemingly, it shorty fails. But with the proper prompt, it might say something reasanble.
+
+## Implementazione:
+
+Di seguito si analizzano i vari aspetti richiesti dal task:
+
+* **Write:**
+  Un LLM è estremamente efficace nello scrivere codice da zero in linguaggi di programmazione standard. Per esempio, nel caso di una funzione che genera numeri casuali basati su una distribuzione probabilistica:
+    
+    ```scala
+    def generateRandomNumber(probabilities: List[Double]): Int = 
+    val cumulative = probabilities.scanLeft(0.0)(_ + _).tail
+    val randomVal = scala.util.Random.nextDouble()
+    cumulative.indexWhere(randomVal <= _)
+    ```
+* **Improve:**
+  Gli LLMs possono anche migliorare codice esistente. Per esempio, ottimizzando la funzione sopra per evitare calcoli ridondanti o per gestire edge cases (come liste vuote):
+    ```scala
+  def generateRandomNumber(probabilities: List[Double]): Option[Int] = 
+  if (probabilities.isEmpty) None
+  else {
+    val cumulative = probabilities.scanLeft(0.0)(_ + _).tail
+    val randomVal = scala.util.Random.nextDouble()
+    Some(cumulative.indexWhere(randomVal <= _))
+  }
+    ```
+    Qui, il miglioramento risiede nella gestione di un input vuoto restituendo None anziché causare un errore
+    
+
+* **Complete:**
+  Gli LLMs possono completare parti mancanti di codice fornendo strutture logiche coerenti. Ad esempio, se avessi già una parte della funzione che gestisce le probabilità ma manca la logica di aggregazione, l'LLM può completare il processo:
+    ```scala
+  def cumulativeProbabilities(probabilities: List[Double]): List[Double] = 
+  probabilities.scanLeft(0.0)(_ + _).tail
+  ```
+  Questo è un tipico esempio di completamento, dove l'LLM può dedurre come procedere in modo naturale.
+
+
+* **Implement:**
+  In un caso in cui il design di una funzione è già stato definito, l'LLM può facilmente implementare la logica. Per esempio, implementare una funzione per generare una statistica basata su un insieme di probabilità:
+    ```scala
+  def generateStatistics(choices: Set[(Double, String)], trials: Int): Map[String, Int] = 
+  val cumulativeChoices = choices.toList
+  (1 to trials).map { _ =>
+    val randomChoice = Stochastics.draw(cumulativeChoices)
+    randomChoice
+  }.groupBy(identity).mapValues(_.size)
+  ```
+  Qui l'LLM implementa una funzione per condurre vari test basati su probabilità specifiche.
+
+
+* **Reverse-Engineer:**
+  Anche se limitato, l'LLM può essere di supporto nel reverse-engineering di codice esistente, analizzando la funzione per dedurre il comportamento sottostante, però non arriva a dedurre sistemi di probabilità. Per esempio:
+    ```scala
+     // Codice dato:
+    def mysteryFunction(input: List[Double]): Double = {
+    input.sum / input.length
+    }
+    
+    // Analisi:
+    Questa funzione calcola la media di una lista di numeri.
+
+  ```
+  L'LLM identifica rapidamente che la funzione restituisce la media dei valori nella lista fornita.
+
+

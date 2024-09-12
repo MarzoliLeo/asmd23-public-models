@@ -6,6 +6,10 @@ import u07.utils.MSet
 import java.util.Random
 import scala.u07.modelling.CTMCAnalysis
 
+/*
+ * Task 2
+ */
+
 object StochasticReadersWriters
   enum Place:
     case READING, WRITING, WAITING_READER, WAITING_WRITER, IDLE_READER, IDLE_WRITER

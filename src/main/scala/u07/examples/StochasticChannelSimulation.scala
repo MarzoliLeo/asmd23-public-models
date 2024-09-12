@@ -15,6 +15,10 @@ import scala.u07.modelling.CTMCAnalysis
         .toList
         .mkString("\n")
 
+/*
+ * TASK 1.
+ */
+
 @main def runAnalysis =
   val avgTime = CTMCAnalysis.averageTimeToState(stocChannel, IDLE, DONE, 1000)
   println(s"Average time to complete communication: $avgTime ms")
