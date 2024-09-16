@@ -309,14 +309,100 @@ Di seguito si analizzano i vari aspetti richiesti dal task:
   Anche se limitato, l'LLM può essere di supporto nel reverse-engineering di codice esistente, analizzando la funzione per dedurre il comportamento sottostante, però non arriva a dedurre sistemi di probabilità. Per esempio:
     ```scala
      // Codice dato:
-    def mysteryFunction(input: List[Double]): Double = {
+    def mysteryFunction(input: List[Double]): Double = 
     input.sum / input.length
-    }
-    
+    ```
+    ```txt
     // Analisi:
     Questa funzione calcola la media di una lista di numeri.
-
-  ```
+    ```
   L'LLM identifica rapidamente che la funzione restituisce la media dei valori nella lista fornita.
+
+# LAB 09 
+
+# Task : Basic-Q-Learning
+
+## Implementazione: 
+
+* **Epsilon** controlla quanto esploriamo rispetto a quanto sfruttiamo le conoscenze attuali. Un epsilon più alto (es. 0.9) comporta maggiore esplorazione, mentre un epsilon basso (es. 0.1) comporta più sfruttamento delle scelte migliori trovate finora.
+  Sono stati eseguiti 3 test in cui epsilon assumeva valore rispettivamente: 0.1 , 0.5, 0.9 e in tutti i tentativi riportati la tabella iniziale assumeva sempre la stessa forma.
+  <p align="center">
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi1.png" width="190"/>
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi2.png" width="200"/>
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi9.png" width="200"/>
+  </p>
+
+* **Gamma** determina quanto valore attribuiamo alle ricompense future rispetto a quelle immediate. Gamma più alto (es. 0.9) darà più importanza ai reward futuri, mentre un gamma basso (es. 0.1) privilegia le ricompense immediate.
+  <p align="center">
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\gammabasso.png" width="200"/>
+  </p>
+* **Alpha** è il fattore di apprendimento. Valori più alti (es. 0.9) portano a un apprendimento più rapido, ma possono essere rumorosi, mentre un valore più basso (es. 0.1) porta a un apprendimento più lento ma più stabile.
+  <p align="center">
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\alphabasso.png" width="200"/>
+  </p>
+
+* Aumentare il **numero di step massimi** per ogni episodio può avere un impatto significativo sull’apprendimento, soprattutto in ambienti più complessi. Per questo ho incrementato il numero di episodi a 200 per ottenere il seguente risultato:
+  <p align="center">
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\episode200.png" width="200"/>
+  </p>
+
+* Aumentando la **dimensione della griglia** (es. da 5x5 a rispettivamente 10x10 o 20x20), puoi osservare come diventa più difficile l'apprendimento a causa dell'aumento del numero di stati possibili.
+  <p align="center">
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\grid10x10.png" width="5000"/>
+  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\grid20x20.png" width="5000"/>
+  </p>
+
+## Conclusione
+
+### **Risultati con Parametri di Default**
+
+- I **valori Q** sembrano distribuiti in modo uniforme sulla griglia.
+- La **politica di direzione** (`>`, `<`, `^`, `V`) riflette una politica coerente, con una chiara tendenza di movimento basata sui valori Q più alti in ogni stato.
+
+**Interpretazione**:  
+Con valori ben bilanciati di α (tasso di apprendimento), γ (fattore di sconto) ed epsilon (esplorazione sfruttamento), l'agente impara a navigare in modo ottimale nell'ambiente, risultando in valori Q stabili e in una politica coerente.
+
+---
+
+### **Risultati con Gamma Basso**
+
+- I **valori Q** risultano notevolmente ridotti, specialmente negli stati più lontani dai punti di ricompensa (i numeri decrescono rapidamente allontanandosi).
+- La **politica di direzione** rimane simile, ma con valori Q che degradano rapidamente.
+
+**Interpretazione**:  
+Un valore basso di γ implica che l'agente è maggiormente focalizzato sulle ricompense immediate piuttosto che su quelle future. Questo porta a valori Q più bassi nelle aree lontane dal premio, indicando che l'agente preferisce movimenti immediati verso le ricompense vicine.
+
+---
+
+### **Risultati con Alpha Basso**
+
+- I **valori Q** sono quasi invariati rispetto al caso default, ma la convergenza è più lenta.
+- La **politica di direzione** rimane la stessa, il che significa che la direzione migliore è stata ancora trovata, ma i valori Q si sono aggiornati più lentamente.
+
+**Interpretazione**:  
+Un valore basso di α riduce la velocità di apprendimento dell'agente. Sebbene alla fine l'agente possa convergere verso una politica ottimale, l'apprendimento risulta più lento e i valori Q cambiano più gradualmente.
+
+---
+
+### **Risultati con aumento del numero di step**
+
+- I **valori Q** sono quasi invariati rispetto al caso default, ma l'output tende ad essere comunque alterato.
+- La **politica di direzione** è alterata dalla profondità che il learning ha avuto conseguentemente al numero di step.
+
+**Interpretazione**:  
+Un valore più alto del numero di step rende più accurato il learning che tenderà ad aumentare l'accuratezza dei suoi risultati.
+
+---
+
+---
+
+### **Risultati con griglie aumentate**
+
+- I **valori Q** sono aumentati rispetto gli esempi precedenti poiché ad aumentare è il numero di stati rendendo il problema molto più complesso.
+
+**Interpretazione**:  
+Un aumento della dimensione della griglia comporta al modello una più chiara interpretazione del sistema, non a caso in entrambi gli esempi superato un certo numero di stati i valori Q tendono tutti ad assumere 1.0, questo permette di concentrarsi su una zona esclusiva.
+
+---
 
 
