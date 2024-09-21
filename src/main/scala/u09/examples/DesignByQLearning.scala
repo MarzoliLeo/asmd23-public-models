@@ -24,10 +24,10 @@ object DesignByQLearning extends App:
       case ((2, 2), DOWN) => (4, 4)  // Esempio di salto
       case ((6, 3), UP) => (3, 3)    // Un altro salto
     },
-    gamma = 0.9,  // Fattore di sconto
-    alpha = 0.5,  // Tasso di apprendimento
-    epsilon = 0.9,  //Nota: epsilon molto alto per far
-    v0 = 1  // Valore iniziale
+    gamma = 0.9,  
+    alpha = 0.5,  
+    epsilon = 0.9,  
+    v0 = 1 
   )
 
   val q0 = rl.qFunction

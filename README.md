@@ -327,29 +327,29 @@ Di seguito si analizzano i vari aspetti richiesti dal task:
 * **Epsilon** controlla quanto esploriamo rispetto a quanto sfruttiamo le conoscenze attuali. Un epsilon più alto (es. 0.9) comporta maggiore esplorazione, mentre un epsilon basso (es. 0.1) comporta più sfruttamento delle scelte migliori trovate finora.
   Sono stati eseguiti 3 test in cui epsilon assumeva valore rispettivamente: 0.1 , 0.5, 0.9 e in tutti i tentativi riportati la tabella iniziale assumeva sempre la stessa forma.
   <p align="center">
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi1.png" width="190"/>
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi2.png" width="200"/>
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\epsi9.png" width="200"/>
+  <img alt="drawing" src="IMG\epsi1.png" width="190"/>
+  <img alt="drawing" src="IMG\epsi2.png" width="200"/>
+  <img alt="drawing" src="IMG\epsi9.png" width="200"/>
   </p>
 
 * **Gamma** determina quanto valore attribuiamo alle ricompense future rispetto a quelle immediate. Gamma più alto (es. 0.9) darà più importanza ai reward futuri, mentre un gamma basso (es. 0.1) privilegia le ricompense immediate.
   <p align="center">
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\gammabasso.png" width="200"/>
+  <img alt="drawing" src="IMG\gammabasso.png" width="200"/>
   </p>
 * **Alpha** è il fattore di apprendimento. Valori più alti (es. 0.9) portano a un apprendimento più rapido, ma possono essere rumorosi, mentre un valore più basso (es. 0.1) porta a un apprendimento più lento ma più stabile.
   <p align="center">
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\alphabasso.png" width="200"/>
+  <img alt="drawing" src="IMG\alphabasso.png" width="200"/>
   </p>
 
 * Aumentare il **numero di step massimi** per ogni episodio può avere un impatto significativo sull’apprendimento, soprattutto in ambienti più complessi. Per questo ho incrementato il numero di episodi a 200 per ottenere il seguente risultato:
   <p align="center">
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\episode200.png" width="200"/>
+  <img alt="drawing" src="IMG\episode200.png" width="200"/>
   </p>
 
 * Aumentando la **dimensione della griglia** (es. da 5x5 a rispettivamente 10x10 o 20x20), puoi osservare come diventa più difficile l'apprendimento a causa dell'aumento del numero di stati possibili.
   <p align="center">
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\grid10x10.png" width="5000"/>
-  <img alt="drawing" src="C:\Users\Xmachines\IdeaProjects\asmd23-public-models\IMG\grid20x20.png" width="5000"/>
+  <img alt="drawing" src="IMG\grid10x10.png" width="5000"/>
+  <img alt="drawing" src="IMG\grid20x20.png" width="5000"/>
   </p>
 
 ## Conclusione
@@ -404,5 +404,50 @@ Un valore più alto del numero di step rende più accurato il learning che tende
 Un aumento della dimensione della griglia comporta al modello una più chiara interpretazione del sistema, non a caso in entrambi gli esempi superato un certo numero di stati i valori Q tendono tutti ad assumere 1.0, questo permette di concentrarsi su una zona esclusiva.
 
 ---
+
+# Task: DESIGN-BY-Q-LEARNING
+changing enviroment, state, rewards (and adding jumps, holes, items, enemies, walls, moving obstacles)
+you can really make your “robot” learn virtually anything, e.g.:
+* I define an environment as a sort of corridor with obstacles: your robot has to “zigzag walk” to avoid them
+* I “program by learning” a robot to collect items one at a time and go back to inital position
+* I “program by learning” a robot to move obstacles so as to hide from enemies
+
+
+## Implementazione:
+
+Il task richiedeva di progettare un robot usando il Q-learning per compiere diverse azioni, in un ambiente con ostacoli, nemici, oggetti, salti, muri e buchi. Di seguito alcune considerazioni:
+
+1. **Ambiente**: L'ambiente è stato creato con una griglia di dimensione 10x10. L'agente parte dalla posizione (0,0) e deve raggiungere la posizione finale (9,9).
+
+
+2. **Cambiato gli stati e i rewards**:
+
+  - Ricompense sono state assegnate in base alla posizione e all'azione eseguita.
+  - Ricompensa positiva (+100) per raggiungere la destinazione finale.
+  - Penalità (-100) per cadere in buchi o incontrare ostacoli e nemici.
+  - Penalità standard (-1) per ogni passo non ottimale.
+  - Oggetti da raccogliere con piccole ricompense (+10).
+
+3. **Salti, Buchi e Nemici**:
+  - I "jumps" sono stati implementati in posizioni specifiche, permettendo al robot di saltare da un punto all'altro.
+  - I "holes" (buchi) sono posizionati strategicamente nella griglia e rappresentano zone pericolose.
+  - Sebbene non siano implementati ostacoli in movimento dinamico nel codice corrente, esistono ostacoli statici con penalità.
+
+4. **Comportamento del Robot**:
+  - **Zigzag Walk**: Il robot è incentivato a evitare gli ostacoli grazie alla penalità impostata, con un comportamento simile a un movimento a zigzag per trovare il percorso ottimale.
+  - **Item Collection**: Il robot raccoglie oggetti (+10) posti in posizioni specifiche sulla griglia.
+  - **Obstacle Evasion**: Con l'apprendimento, il robot impara a evitare ostacoli e buchi per evitare penalità.
+
+## Risultati Attesi
+
+- Il robot esplorerà la griglia, evitando gli ostacoli, raccogliendo oggetti e cercando di raggiungere la posizione finale (9,9).
+- I valori finali delle politiche mostreranno la valutazione di ogni stato, con il robot che apprende a evitare penalità e a massimizzare le ricompense.
+
+Il codice finale è visibile nel file [DeisgnByQLearning](src/main/scala/u09/examples/DesignByQLearning.scala)  e di seguito viene riportato uno screen dell'esecuzione che riporta ciò che che è stato detto in precedenza.
+
+<p align="center">
+<img alt="drawing" src="IMG/Lab9Robot.png" width="500"/>
+</p>
+
 
 
